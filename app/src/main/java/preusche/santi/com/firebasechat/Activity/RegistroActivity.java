@@ -59,6 +59,7 @@ public class RegistroActivity extends AppCompatActivity {
     private RadioButton rdHombre;
     private RadioButton rdMujer;
     private Button btnRegistrar;
+
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
 
@@ -206,7 +207,12 @@ public class RegistroActivity extends AppCompatActivity {
                                                     FirebaseUser currentUser = mAuth.getCurrentUser();
                                                     DatabaseReference reference = database.getReference("Usuarios/" + currentUser.getUid());
                                                     reference.setValue(usuario);
+                                              //      database.getReference("Usuarios/" + currentUser.getUid() + "/Amigos").setValue(usuario);
+
                                                     finish();
+
+
+
                                                 }
                                             });
 
@@ -221,6 +227,7 @@ public class RegistroActivity extends AppCompatActivity {
                                             FirebaseUser currentUser = mAuth.getCurrentUser();
                                             DatabaseReference reference = database.getReference("Usuarios/"+currentUser.getUid());
                                             reference.setValue(usuario);
+                                         //   database.getReference("Usuarios/" + currentUser.getUid() + "/Amigos/" + currentUser.getUid()).setValue(usuario);
                                             finish();
                                         }
 

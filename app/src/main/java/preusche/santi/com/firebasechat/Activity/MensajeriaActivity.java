@@ -69,6 +69,8 @@ public class MensajeriaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mensajeria);
 
+        setTitle("Chat");
+
         Bundle bundle = getIntent().getExtras();
         if(bundle!=null){
             KEY_RECEPTOR = bundle.getString("key_receptor");

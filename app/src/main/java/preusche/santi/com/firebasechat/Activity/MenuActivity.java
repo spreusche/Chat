@@ -25,6 +25,8 @@ public class MenuActivity extends AppCompatActivity {
         btnVerUsuarios = findViewById(R.id.btnVerUsuarios);
         btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
 
+        setTitle("Menu");
+
         btnVerUsuarios.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,5 +1,7 @@
 package preusche.santi.com.firebasechat.Entidades.Firebase;
 
+import java.util.List;
+
 /**
  * Created by user on 19/02/2018. 19
  */
@@ -12,7 +14,17 @@ public class Usuario {
     private long fechaDeNacimiento;
     private String genero;
 
+
+
     public Usuario() {
+    }
+
+    public Usuario(String fotoPerfilURL, String nombre, String correo, long fechaDeNacimiento, String genero) {
+        this.fotoPerfilURL = fotoPerfilURL;
+        this.nombre = nombre;
+        this.correo = correo;
+        this.fechaDeNacimiento = fechaDeNacimiento;
+        this.genero = genero;
     }
 
     public String getFotoPerfilURL() {
