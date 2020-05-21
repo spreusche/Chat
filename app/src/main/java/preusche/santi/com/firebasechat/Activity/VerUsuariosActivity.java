@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -26,6 +27,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
 import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
 import preusche.santi.com.firebasechat.Holder.UsuarioViewHolder;
@@ -37,14 +41,18 @@ public class VerUsuariosActivity extends AppCompatActivity {
     private RecyclerView rvUsuarios;
 
 
+    private int idGenerator;
+
+
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseRecyclerAdapter adapter;
     private FirebaseDatabase database;
     private DatabaseReference usuariosReference;
 
-
+    //Buttons
     private Button addUserBtn;
+   // private Button deleteContactBtn;
     private EditText txtEmailNuevo;
 
 
@@ -64,9 +72,69 @@ public class VerUsuariosActivity extends AppCompatActivity {
         usuariosReference = database.getReference(Constantes.NODO_USUARIOS);
 
         addUserBtn = (Button) findViewById(R.id.btnAgregar);
+        //deleteContactBtn = (Button) findViewById(R.id.);
+
         txtEmailNuevo = (EditText) findViewById(R.id.txtAgregarUsuario);
 
         setTitle("Contactos");
+
+
+      /*  deleteContactBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(VerUsuariosActivity.this, "Aprete eliminar", Toast.LENGTH_SHORT).show();
+                System.out.println("Aprete el boton nomas");
+            }
+        });*/
+
+      database.getReference().child("Usuarios").child(mAuth.getUid()).child("Amigos").addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+              idGenerator = (int) dataSnapshot.getChildrenCount();
+          }
+
+          @Override
+          public void onCancelled(@NonNull DatabaseError databaseError) {
+
+          }
+      });
+
+
+        System.out.println("idGen: " + idGenerator);
+
+
+      for(int i = 0; i < idGenerator; i++){
+          //Boton dinamico
+          Button myButton = new Button(VerUsuariosActivity.this);
+          myButton.setText("Eliminar");
+          myButton.setId(idGenerator++);
+          myButton.setOnClickListener(new View.OnClickListener() {
+              @Override
+              public void onClick(View v) {
+                  eliminarUsuario(v.getId());
+
+                  idGenerator--;
+
+                  ViewGroup layout = (ViewGroup) v.getParent();
+                  if(null!=layout) //for safety only  as you are doing onClick
+                      layout.removeView(v);
+
+                  for(int i = 0; i < idGenerator; i++){
+                      layout.getChildAt(i).setId(i);
+                  }
+
+
+              }
+          });
+
+
+          LinearLayout ll = (LinearLayout)findViewById(R.id.buttonLayout);
+          ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+          ll.addView(myButton, lp);
+
+
+      }
+
 
 
         addUserBtn.setOnClickListener(new View.OnClickListener() {
@@ -90,22 +158,57 @@ public class VerUsuariosActivity extends AppCompatActivity {
                             Usuario yo = new Usuario(miFoto, miNombre, miCorreo, miNacimiento, miGenero);
 
                             for(DataSnapshot ds  : dataSnapshot.getChildren()){
-                                u = ds.getValue(Usuario.class);
+                                    u = ds.getValue(Usuario.class);
 
                                 //Agrego al usuario nuevo
-                                if(u.getCorreo().equals(emailABuscar)){
+                                if(u.getCorreo().equals(emailABuscar)) {
+                                    if (!ds.hasChild(mAuth.getUid() + "/Amigos/" + u.getNombre() + "~" + ds.getKey())) {
 
-                                    database.getReference("Usuarios/" + mAuth.getUid() + "/Amigos/" +  ds.getKey()).setValue(u);
-                                    database.getReference("Usuarios/" + ds.getKey() + "/Amigos/" +  mAuth.getUid()).setValue(yo);
+                                        database.getReference("Usuarios/" + mAuth.getUid() + "/Amigos/" + u.getNombre() + "~" + ds.getKey()).setValue(u);
+                                        database.getReference("Usuarios/" + ds.getKey() + "/Amigos/" + miNombre + "~" + mAuth.getUid()).setValue(yo);
 
 
+                                        //Boton dinamico
+                                        Button myButton = new Button(VerUsuariosActivity.this);
+                                        myButton.setText("Eliminar");
+                                        myButton.setId(idGenerator++);
+                                        myButton.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                eliminarUsuario(v.getId());
 
+                                                idGenerator--;
+
+                                                ViewGroup layout = (ViewGroup) v.getParent();
+                                                if (null != layout) //for safety only  as you are doing onClick
+                                                    layout.removeView(v);
+
+                                                for (int i = 0; i < idGenerator; i++) {
+                                                    layout.getChildAt(i).setId(i);
+                                                }
+
+
+                                            }
+                                        });
+
+
+                                        LinearLayout ll = (LinearLayout) findViewById(R.id.buttonLayout);
+                                        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                        ll.addView(myButton, lp);
+
+
+                                        return;
+
+                                    }
+                                    else
+                                        Toast.makeText(VerUsuariosActivity.this, "Ya tienes este conotacto", Toast.LENGTH_SHORT).show();
                                 }
                              /*   if(u.getCorreo().equals(mAuth.getCurrentUser().getEmail())){
 
                                 }*/
 
                             }
+                            Toast.makeText(VerUsuariosActivity.this, "No existe el usuario", Toast.LENGTH_SHORT).show();
 
                         }
 
@@ -174,6 +277,41 @@ public class VerUsuariosActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         adapter.stopListening();
+    }
+
+    private void eliminarUsuario(final int id){
+
+        database.getReference("Usuarios/" + mAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String uidConcatenadoAEliminar;
+                String miNombre = dataSnapshot.child("nombre").getValue().toString(); //conseguimos el nombre
+
+                int i = 0;
+                for(DataSnapshot ds : dataSnapshot.child("Amigos").getChildren()){
+                    if(i == id){
+                        uidConcatenadoAEliminar = ds.getKey();
+                        database.getReference("Usuarios/" + mAuth.getUid() + "/Amigos/" + uidConcatenadoAEliminar).removeValue();
+                        String amigoUid = uidConcatenadoAEliminar.subSequence(uidConcatenadoAEliminar.indexOf("~") + 1, uidConcatenadoAEliminar.length()).toString();
+                        System.out.println(amigoUid);
+
+                        database.getReference("Usuarios/" + amigoUid + "/Amigos/" + miNombre + "~" + mAuth.getUid()).removeValue();
+
+
+
+                        return;
+                    }
+                    i++;
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 }

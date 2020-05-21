@@ -3,6 +3,7 @@ package preusche.santi.com.firebasechat.Holder;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -45,4 +46,6 @@ public class UsuarioViewHolder extends RecyclerView.ViewHolder {
     public void setLayoutPrincipal(LinearLayout layoutPrincipal) {
         this.layoutPrincipal = layoutPrincipal;
     }
+
+
 }
