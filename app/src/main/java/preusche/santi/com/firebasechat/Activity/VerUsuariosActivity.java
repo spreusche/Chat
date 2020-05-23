@@ -29,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
 import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
@@ -79,18 +80,51 @@ public class VerUsuariosActivity extends AppCompatActivity {
         setTitle("Contactos");
 
 
-      /*  deleteContactBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(VerUsuariosActivity.this, "Aprete eliminar", Toast.LENGTH_SHORT).show();
-                System.out.println("Aprete el boton nomas");
-            }
-        });*/
+        System.out.println("antes valia: " + idGenerator);
 
-      database.getReference().child("Usuarios").child(mAuth.getUid()).child("Amigos").addListenerForSingleValueEvent(new ValueEventListener() {
+        final CountDownLatch done = new CountDownLatch(1);
+
+
+
+        database.getReference().child("Usuarios").child(mAuth.getUid()).child("Amigos").addListenerForSingleValueEvent(new ValueEventListener() {
           @Override
           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-              idGenerator = (int) dataSnapshot.getChildrenCount();
+             // List<Usuario> amigos = new ArrayList<>();
+              int i = 0;
+
+              //GENERO UN BOTON POR CADA AMIGO
+              for(DataSnapshot ds : dataSnapshot.getChildren()){
+                  Button myButton = new Button(VerUsuariosActivity.this);
+                  myButton.setText("Eliminar");
+                  myButton.setId(i++);
+                  myButton.setOnClickListener(new View.OnClickListener() {
+                      @Override
+                      public void onClick(View v) {
+                          eliminarUsuario(v.getId());
+
+                          idGenerator--;
+
+                          ViewGroup layout = (ViewGroup) v.getParent();
+                          if(null!=layout) //for safety only  as you are doing onClick
+                              layout.removeView(v);
+
+                          for(int i = 0; i < idGenerator; i++){
+                              layout.getChildAt(i).setId(i);
+                          }
+
+
+                      }
+                  });
+
+
+                  LinearLayout ll = (LinearLayout)findViewById(R.id.buttonLayout);
+                  ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                  ll.addView(myButton, lp);
+              }
+
+
+              idGenerator = i;
+             // done.countDown();
           }
 
           @Override
@@ -100,14 +134,23 @@ public class VerUsuariosActivity extends AppCompatActivity {
       });
 
 
-        System.out.println("idGen: " + idGenerator);
+    // idGenerator = 2;
+      /*  try {
+            done.await(); //it will wait till the response is received from firebase.
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+*/
+
+       System.out.println("Luego del for idGen: " + idGenerator);
 
 
-      for(int i = 0; i < idGenerator; i++){
+   /* SOLUCIONADO ARRIBA CON LA IDEA DE NACHO
+    for(int i = 0; i < idGenerator; i++){
           //Boton dinamico
           Button myButton = new Button(VerUsuariosActivity.this);
           myButton.setText("Eliminar");
-          myButton.setId(idGenerator++);
+          myButton.setId(i);
           myButton.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View v) {
@@ -133,7 +176,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
           ll.addView(myButton, lp);
 
 
-      }
+      }*/
 
 
 
