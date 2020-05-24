@@ -1,16 +1,22 @@
 package preusche.santi.com.firebasechat.Adaptadores;
 
 import android.content.Context;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
 import preusche.santi.com.firebasechat.Entidades.Logica.LMensaje;
 import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
 import preusche.santi.com.firebasechat.Holder.MensajeriaHolder;

@@ -1,5 +1,11 @@
 package preusche.santi.com.firebasechat.Activity;
 
+/**
+ * NOTAS DE HOY 24/5/20
+ *  hice el LinearLayout como una variable, sera private
+ */
+
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -54,7 +60,14 @@ public class VerUsuariosActivity extends AppCompatActivity {
     //Buttons
     private Button addUserBtn;
    // private Button deleteContactBtn;
+    private Button editBtn;
+    private Button doneEditBtn;
+
+    //EditText
     private EditText txtEmailNuevo;
+
+    private LinearLayout ll;
+
 
 
 
@@ -63,33 +76,43 @@ public class VerUsuariosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ver_usuarios);
 
+        //RECYCLER VIEW
         rvUsuarios = findViewById(R.id.rvUsuarios);
 
+        //LAYOUT
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvUsuarios.setLayoutManager(linearLayoutManager);
+        ll = (LinearLayout) findViewById(R.id.buttonLayout);
 
+       //FIREBASE
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         usuariosReference = database.getReference(Constantes.NODO_USUARIOS);
 
+        //BUTTONS
         addUserBtn = (Button) findViewById(R.id.btnAgregar);
+        editBtn = (Button) findViewById(R.id.editBtn);
+        doneEditBtn = (Button) findViewById(R.id.doneEditBtn);
         //deleteContactBtn = (Button) findViewById(R.id.);
 
+        //TEXT
         txtEmailNuevo = (EditText) findViewById(R.id.txtAgregarUsuario);
+
 
         setTitle("Contactos");
 
 
-        System.out.println("antes valia: " + idGenerator);
 
-        final CountDownLatch done = new CountDownLatch(1);
+
+
+
 
 
 
         database.getReference().child("Usuarios").child(mAuth.getUid()).child("Amigos").addListenerForSingleValueEvent(new ValueEventListener() {
           @Override
           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-             // List<Usuario> amigos = new ArrayList<>();
+
               int i = 0;
 
               //GENERO UN BOTON POR CADA AMIGO
@@ -97,6 +120,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
                   Button myButton = new Button(VerUsuariosActivity.this);
                   myButton.setText("Eliminar");
                   myButton.setId(i++);
+                  myButton.setVisibility(View.GONE);    //genero los botones pero se ocultan
                   myButton.setOnClickListener(new View.OnClickListener() {
                       @Override
                       public void onClick(View v) {
@@ -108,6 +132,8 @@ public class VerUsuariosActivity extends AppCompatActivity {
                           if(null!=layout) //for safety only  as you are doing onClick
                               layout.removeView(v);
 
+
+                          //CREO QUE ESTO ACA ESTA DE MAS... PREGUNTAR A NACHO (aunque lo hice yo...jejeje)
                           for(int i = 0; i < idGenerator; i++){
                               layout.getChildAt(i).setId(i);
                           }
@@ -117,14 +143,14 @@ public class VerUsuariosActivity extends AppCompatActivity {
                   });
 
 
-                  LinearLayout ll = (LinearLayout)findViewById(R.id.buttonLayout);
+
                   ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                   ll.addView(myButton, lp);
               }
 
 
               idGenerator = i;
-             // done.countDown();
+
           }
 
           @Override
@@ -134,15 +160,26 @@ public class VerUsuariosActivity extends AppCompatActivity {
       });
 
 
-    // idGenerator = 2;
-      /*  try {
-            done.await(); //it will wait till the response is received from firebase.
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        }
-*/
 
-       System.out.println("Luego del for idGen: " + idGenerator);
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editBtn.setVisibility(View.GONE);
+                doneEditBtn.setVisibility(View.VISIBLE);
+                showButtons();
+            }
+        });
+
+        doneEditBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideButtons();
+                editBtn.setVisibility(View.VISIBLE);
+                doneEditBtn.setVisibility(View.GONE);
+
+            }
+        });
+
 
 
    /* SOLUCIONADO ARRIBA CON LA IDEA DE NACHO
@@ -215,6 +252,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
                                         Button myButton = new Button(VerUsuariosActivity.this);
                                         myButton.setText("Eliminar");
                                         myButton.setId(idGenerator++);
+                                        myButton.setVisibility(View.GONE); //Lo genero pero oculto
                                         myButton.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
@@ -223,7 +261,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
                                                 idGenerator--;
 
                                                 ViewGroup layout = (ViewGroup) v.getParent();
-                                                if (null != layout) //for safety only  as you are doing onClick
+                                                if (null != layout) //for safety only as you are doing onClick
                                                     layout.removeView(v);
 
                                                 for (int i = 0; i < idGenerator; i++) {
@@ -235,7 +273,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
                                         });
 
 
-                                        LinearLayout ll = (LinearLayout) findViewById(R.id.buttonLayout);
+                                       // LinearLayout ll = (LinearLayout) findViewById(R.id.buttonLayout);
                                         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                                         ll.addView(myButton, lp);
 
@@ -355,6 +393,19 @@ public class VerUsuariosActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+
+    private void showButtons(){
+        for(int i = 0; i < idGenerator; i++){
+            ll.getChildAt(i).setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideButtons(){
+        for(int i = 0; i < idGenerator; i++){
+            ll.getChildAt(i).setVisibility(View.GONE);
+        }
     }
 
 }

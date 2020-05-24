@@ -1,5 +1,10 @@
 package preusche.santi.com.firebasechat.Activity;
 
+/**
+ * Cambios 24/5/20
+ *  intento agregar el nombre + ~ a los UIDs correspondientes a el envio de mensajes
+ */
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
@@ -11,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,6 +33,7 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -36,6 +44,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 import preusche.santi.com.firebasechat.Adaptadores.MensajeriaAdaptador;
 import preusche.santi.com.firebasechat.Entidades.Firebase.Mensaje;
+import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
 import preusche.santi.com.firebasechat.Entidades.Logica.LMensaje;
 import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
 import preusche.santi.com.firebasechat.Persistencia.MensajeriaDAO;
@@ -64,12 +73,28 @@ public class MensajeriaActivity extends AppCompatActivity {
 
     private String KEY_RECEPTOR;
 
+
+    private Usuario current;
+    private String currentName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mensajeria);
 
         setTitle("Chat");
+
+        //----------------INICIO: zona de prints de prueba-----------------------------
+        System.out.println("GDSFDFSDGSDGSDFSDF\nFSAFASFAF");
+        System.out.println(getIntent().toString());
+
+        Bundle bundle1 = getIntent().getExtras();
+        if (bundle1 != null) {
+            for (String key : bundle1.keySet()) {
+                Log.e("TAG", key + " : " + (bundle1.get(key) != null ? bundle1.get(key) : "NULL"));
+            }
+        }
+        //---------------- FIN:  zona de prints de prueba-----------------------------
 
         Bundle bundle = getIntent().getExtras();
         if(bundle!=null){
@@ -94,6 +119,23 @@ public class MensajeriaActivity extends AppCompatActivity {
         rvMensajes.setLayoutManager(l);
         rvMensajes.setAdapter(adapter);
 
+
+
+        /* mayo */ //Para obtener mi nombre
+        String stringCurrent = mAuth.getCurrentUser().getUid();
+        FirebaseDatabase.getInstance().getReference("Usuarios/" + stringCurrent).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+               current = dataSnapshot.getValue(Usuario.class);
+              currentName = current.getNombre();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         btnEnviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -102,8 +144,9 @@ public class MensajeriaActivity extends AppCompatActivity {
                     Mensaje mensaje = new Mensaje();
                     mensaje.setMensaje(mensajeEnviar);
                     mensaje.setContieneFoto(false);
-                    mensaje.setKeyEmisor(UsuarioDAO.getInstancia().getKeyUsuario());
-                    MensajeriaDAO.getInstancia().nuevoMensaje(UsuarioDAO.getInstancia().getKeyUsuario(),KEY_RECEPTOR,mensaje);
+                    System.out.println("CURRENT NAMEEEEEEEEE: " + currentName);
+                    /* mayo */      mensaje.setKeyEmisor(currentName + "~" + UsuarioDAO.getInstancia().getKeyUsuario());
+                    /* mayo */      MensajeriaDAO.getInstancia().nuevoMensaje(currentName + "~" + UsuarioDAO.getInstancia().getKeyUsuario(),KEY_RECEPTOR,mensaje);
                     txtMensaje.setText("");
                 }
             }
@@ -140,7 +183,7 @@ public class MensajeriaActivity extends AppCompatActivity {
         FirebaseDatabase.
                 getInstance().
                 getReference(Constantes.NODO_MENSAJES).
-                child(UsuarioDAO.getInstancia().getKeyUsuario()).
+                /* mayo */          child(currentName + "~" + UsuarioDAO.getInstancia().getKeyUsuario()).
                 child(KEY_RECEPTOR).addChildEventListener(new ChildEventListener() {
 
             //traer la informacion del usuario
@@ -151,17 +194,21 @@ public class MensajeriaActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 final Mensaje mensaje = dataSnapshot.getValue(Mensaje.class);
+
+                /* mayo pero deshice lo agregado (lo de current + ~) */
                 final LMensaje lMensaje = new LMensaje(dataSnapshot.getKey(),mensaje);
                 final int posicion = adapter.addMensaje(lMensaje);
 
-                if(mapUsuariosTemporales.get(mensaje.getKeyEmisor())!=null){
-                    lMensaje.setlUsuario(mapUsuariosTemporales.get(mensaje.getKeyEmisor()));
+                /* mayo */  /* mayo */
+                if(mapUsuariosTemporales.get(currentName + "~" + mensaje.getKeyEmisor())!=null){
+                    lMensaje.setlUsuario(mapUsuariosTemporales.get(currentName + "~" + mensaje.getKeyEmisor()));
                     adapter.actualizarMensaje(posicion,lMensaje);
                 }else{
-                    UsuarioDAO.getInstancia().obtenerInformacionDeUsuarioPorLLave(mensaje.getKeyEmisor(), new UsuarioDAO.IDevolverUsuario() {
+                    /* mayo */
+                    UsuarioDAO.getInstancia().obtenerInformacionDeUsuarioPorLLave(currentName + "~" + mensaje.getKeyEmisor(), new UsuarioDAO.IDevolverUsuario() {
                         @Override
-                        public void devolverUsuario(LUsuario lUsuario) {
-                            mapUsuariosTemporales.put(mensaje.getKeyEmisor(),lUsuario);
+                        public void devolverUsuario(LUsuario lUsuario) { /* mayo */
+                            mapUsuariosTemporales.put(currentName + "~" + mensaje.getKeyEmisor(),lUsuario);
                             lMensaje.setlUsuario(lUsuario);
                             adapter.actualizarMensaje(posicion,lMensaje);
                         }
@@ -247,12 +294,15 @@ public class MensajeriaActivity extends AppCompatActivity {
                         mensaje.setMensaje("El uuario ha enviado una foto");
                         mensaje.setUrlFoto(uri.toString());
                         mensaje.setContieneFoto(true);
-                        mensaje.setKeyEmisor(UsuarioDAO.getInstancia().getKeyUsuario());
-                        MensajeriaDAO.getInstancia().nuevoMensaje(UsuarioDAO.getInstancia().getKeyUsuario(),KEY_RECEPTOR,mensaje);
+                        mensaje.setKeyEmisor(currentName + "~" + UsuarioDAO.getInstancia().getKeyUsuario());
+                        MensajeriaDAO.getInstancia().nuevoMensaje( currentName + "~" + UsuarioDAO.getInstancia().getKeyUsuario(),KEY_RECEPTOR,mensaje);
                     }
                 }
             });
-        }/*else if(requestCode == PHOTO_PERFIL && resultCode == RESULT_OK){
+        }
+
+
+        /*else if(requestCode == PHOTO_PERFIL && resultCode == RESULT_OK){
             Uri u = data.getData();
             storageReference = storage.getReference("foto_perfil");//imagenes_chat
             final StorageReference fotoReferencia = storageReference.child(u.getLastPathSegment());
@@ -279,5 +329,6 @@ public class MensajeriaActivity extends AppCompatActivity {
             });
         }*/
     }
+
 
 }
