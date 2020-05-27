@@ -18,12 +18,17 @@
             android:layout_width="48sp"
             android:layout_height="48sp"
             android:src="@mipmap/ic_launcher" />
+
         <TextView
             android:id="@+id/nombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingLeft="15dp"
             android:text="RECEPTOR"
-            android:layout_gravity="center"/>
+            android:textColor="#FE0C0404"
+            android:textSize="25dp"
+            android:textStyle="bold" />
     </LinearLayout>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMensajes"

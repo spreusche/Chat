@@ -18,6 +18,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,6 +27,7 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -36,6 +38,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 import preusche.santi.com.firebasechat.Adaptadores.MensajeriaAdaptador;
 import preusche.santi.com.firebasechat.Entidades.Firebase.Mensaje;
+import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
 import preusche.santi.com.firebasechat.Entidades.Logica.LMensaje;
 import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
 import preusche.santi.com.firebasechat.Persistencia.MensajeriaDAO;
@@ -94,6 +97,32 @@ public class MensajeriaActivity extends AppCompatActivity {
         rvMensajes.setLayoutManager(l);
         rvMensajes.setAdapter(adapter);
 
+        System.out.println(KEY_RECEPTOR);
+
+//        nombre.setText("Teemo");
+//        Glide.with(this).load("https://firebasestorage.googleapis.com/v0/b/kevin-7ad2a.appspot.com/o/Fotos%2FFotoPerfil%2FYxiSpyoaRlcfrJcAeZ3b3MRDR463%2F776.36-20-04-22-05-2020?alt=media&token=475b9fcb-229e-446c-b537-f25a40a995d0").into(fotoPerfil);
+
+        FirebaseDatabase.getInstance().getReference(Constantes.NODO_USUARIOS + "/" + KEY_RECEPTOR).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Usuario u = dataSnapshot.getValue(Usuario.class);
+                nombre.setText(u.getNombre());
+                Glide.with(MensajeriaActivity.this).load(u.getFotoPerfilURL()).into(fotoPerfil);
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+
+
+
         btnEnviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -104,10 +133,15 @@ public class MensajeriaActivity extends AppCompatActivity {
                     mensaje.setContieneFoto(false);
                     mensaje.setKeyEmisor(UsuarioDAO.getInstancia().getKeyUsuario());
                     MensajeriaDAO.getInstancia().nuevoMensaje(UsuarioDAO.getInstancia().getKeyUsuario(),KEY_RECEPTOR,mensaje);
+
+                    FirebaseDatabase.getInstance().getReference("Usuarios/" + KEY_RECEPTOR + "/MensajesNuevos/" + mAuth.getCurrentUser().getEmail().replace(".",",")).setValue(mensajeEnviar);
+
+
                     txtMensaje.setText("");
                 }
             }
         });
+
 
         btnEnviarFoto.setOnClickListener(new View.OnClickListener() {
             @Override

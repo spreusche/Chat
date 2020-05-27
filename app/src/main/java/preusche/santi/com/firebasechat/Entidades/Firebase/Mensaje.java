@@ -13,6 +13,7 @@ public class Mensaje {
     private boolean contieneFoto;
     private String keyEmisor;
     private Object createdTimestamp;
+   // private boolean leido;
 
     public Mensaje() {
         createdTimestamp = ServerValue.TIMESTAMP;
@@ -53,4 +54,12 @@ public class Mensaje {
     public Object getCreatedTimestamp() {
         return createdTimestamp;
     }
+
+   /* public boolean isLeido() {
+        return leido;
+    }
+
+    public void setLeido(boolean leido) {
+        this.leido = leido;
+    }*/
 }

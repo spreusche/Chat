@@ -1,5 +1,6 @@
 package preusche.santi.com.firebasechat.Activity;
 
+import android.app.TaskStackBuilder;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -19,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -44,8 +46,12 @@ public class VerUsuariosActivity extends AppCompatActivity {
     private DatabaseReference usuariosReference;
 
 
+    //Buttons
     private Button addUserBtn;
+
+    //Text
     private EditText txtEmailNuevo;
+
 
 
 
@@ -144,9 +150,32 @@ public class VerUsuariosActivity extends AppCompatActivity {
             }
 
             @Override
-            protected void onBindViewHolder(UsuarioViewHolder holder, int position, final Usuario model) {
+            protected void onBindViewHolder(final UsuarioViewHolder holder, int position, final Usuario model) {
                 Glide.with(VerUsuariosActivity.this).load(model.getFotoPerfilURL()).into(holder.getCivFotoPerfil());
                 holder.getTxtNombreUsuario().setText(model.getNombre());
+
+                DatabaseReference ref = database.getReference("Usuarios/" + mAuth.getUid() + "/MensajesNuevos/" + model.getCorreo().replace(".", ","));
+                ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.getValue() != null) {
+                                // The child does exist
+                                holder.getCircle().setVisibility(View.VISIBLE);
+                                System.out.println(snapshot.getValue().toString());
+                            }else {
+                                System.out.println("hola, fue null");
+                                holder.getCircle().setVisibility(View.GONE);
+                            }
+                        }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
+
 
                 final LUsuario lUsuario = new LUsuario(getSnapshots().getSnapshot(position).getKey(),model);
 
@@ -155,6 +184,9 @@ public class VerUsuariosActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         Intent intent = new Intent(VerUsuariosActivity.this,MensajeriaActivity.class);
                         intent.putExtra("key_receptor",lUsuario.getKey());
+
+                        database.getReference("Usuarios/" + mAuth.getUid() + "/MensajesNuevos/" + model.getCorreo().replace(".", ",")).removeValue();
+
                         startActivity(intent);
                     }
                 });
@@ -162,18 +194,29 @@ public class VerUsuariosActivity extends AppCompatActivity {
             }
         };
         rvUsuarios.setAdapter(adapter);
+
+
     }
+
+
 
     @Override
     protected void onStart() {
         super.onStart();
         adapter.startListening();
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         adapter.stopListening();
+    }
+
+    private String emailComma(String email){
+        String emailComma;
+        emailComma = email.replace(".", ",");
+        return emailComma;
     }
 
 }
