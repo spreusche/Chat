@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/layoutPrincipal"
+    android:id="@+id/principalLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/selector"
@@ -18,7 +18,7 @@
         android:padding="5sp">
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/civFotoPerfil"
+            android:id="@+id/civProfilePic"
             android:layout_width="48sp"
             android:layout_height="48sp"
             android:src="@mipmap/ic_launcher" />
@@ -37,7 +37,7 @@
 
 
             <TextView
-                android:id="@+id/txtNombreUsuario"
+                android:id="@+id/txtUsername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

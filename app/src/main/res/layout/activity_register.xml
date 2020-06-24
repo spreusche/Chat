@@ -15,7 +15,7 @@
             android:gravity="center"
             android:orientation="vertical">
             <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/fotoPerfil"
+                android:id="@+id/profilePic"
                 android:layout_width="150sp"
                 android:layout_height="150sp"
                 android:src="@mipmap/ic_launcher"/>
@@ -24,30 +24,30 @@
                 android:layout_height="wrap_content"
                 android:text="Click para cambiar tu foto de perfil"/>
             <EditText
-                android:id="@+id/idRegistroNombre"
+                android:id="@+id/idRegisterName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Nombre"/>
             <EditText
-                android:id="@+id/idRegistroCorreo"
+                android:id="@+id/idRegisterEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Correo"
                 android:inputType="textEmailAddress"/>
             <EditText
-                android:id="@+id/idRegistroContraseña"
+                android:id="@+id/idRegisterPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Contraseña"
                 android:inputType="textPassword"/>
             <EditText
-                android:id="@+id/idRegistroContraseñaRepetida"
+                android:id="@+id/idRegisterRepeatedPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Repetir contraseña"
                 android:inputType="textPassword"/>
             <EditText
-                android:id="@+id/txtFechaDeNacimiento"
+                android:id="@+id/txtBirthDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Fecha de nacimiento"
@@ -60,21 +60,21 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <RadioButton
-                    android:id="@+id/rdHombre"
+                    android:id="@+id/rbMale"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="Hombre"
                     android:layout_weight="1"
                     android:checked="true"/>
                 <RadioButton
-                    android:id="@+id/rdMujer"
+                    android:id="@+id/rbFemale"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="Mujer"
                     android:layout_weight="1"/>
             </RadioGroup>
             <Button
-                android:id="@+id/idRegistroRegistrar"
+                android:id="@+id/idRegisterRegister"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="Registrar"/>

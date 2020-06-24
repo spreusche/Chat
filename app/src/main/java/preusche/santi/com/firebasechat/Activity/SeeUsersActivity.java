@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -28,22 +27,18 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import preusche.santi.com.firebasechat.Entidades.Firebase.Mensaje;
-import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
-import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
-import preusche.santi.com.firebasechat.Holder.UsuarioViewHolder;
+import preusche.santi.com.firebasechat.Entidades.Firebase.User;
+import preusche.santi.com.firebasechat.Entidades.Logica.LUser;
+import preusche.santi.com.firebasechat.Holder.UserViewHolder;
 import preusche.santi.com.firebasechat.R;
-import preusche.santi.com.firebasechat.Utilidades.Constantes;
+import preusche.santi.com.firebasechat.Utilidades.Constants;
 
-public class VerUsuariosActivity extends AppCompatActivity {
+public class SeeUsersActivity extends AppCompatActivity {
 
-    private RecyclerView rvUsuarios;
+    //view
+    private RecyclerView rvUsers;
 
+    //String
     private  String lastMessage;
     private  String uidByEmail;
 
@@ -52,7 +47,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseRecyclerAdapter adapter;
     private FirebaseDatabase database;
-    private DatabaseReference usuariosReference;
+    private DatabaseReference usersReference;
 
 
     //Buttons
@@ -62,7 +57,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
   //  private ImageView mDeleteImage;
 
     //Text
-    private EditText txtEmailNuevo;
+    private EditText txtNewEmail;
 
 
 
@@ -71,54 +66,55 @@ public class VerUsuariosActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ver_usuarios);
+        setContentView(R.layout.activity_see_users);
 
-        rvUsuarios = findViewById(R.id.rvUsuarios);
+        rvUsers = findViewById(R.id.rvUsers);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        rvUsuarios.setLayoutManager(linearLayoutManager);
+        rvUsers.setLayoutManager(linearLayoutManager);
 
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
-        usuariosReference = database.getReference(Constantes.NODO_USUARIOS);
+        usersReference = database.getReference(Constants.USERS_NODE);
 
-        addUserBtn = (Button) findViewById(R.id.btnAgregar);
-        txtEmailNuevo = (EditText) findViewById(R.id.txtAgregarUsuario);
+        addUserBtn = (Button) findViewById(R.id.btnAdd);
+        txtNewEmail = (EditText) findViewById(R.id.txtAddUser);
 
      //   mDeleteImage = (ImageView) findViewById(R.id.defautlDeleteID);
 
         setTitle("Contactos");
 
-        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(rvUsuarios);
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(rvUsers);
 
         addUserBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String emailABuscar = txtEmailNuevo.getText().toString();
-                if(!emailABuscar.isEmpty()){
+                //email a buscar (no te se traducirlo directamente)
+                final String wantedEmail = txtNewEmail.getText().toString();
+                if(!wantedEmail.isEmpty()){
 
-                    usuariosReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    usersReference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                         String miCorreo =  dataSnapshot.child(mAuth.getUid()).child("correo").getValue().toString();
-                            String miNombre =  dataSnapshot.child(mAuth.getUid()).child("nombre").getValue().toString();
-                            Long miNacimiento = (Long) dataSnapshot.child(mAuth.getUid()).child("fechaDeNacimiento").getValue();
-                            String miFoto =  dataSnapshot.child(mAuth.getUid()).child("fotoPerfilURL").getValue().toString();
-                            String miGenero =  dataSnapshot.child(mAuth.getUid()).child("genero").getValue().toString();
+                            String myEmail =  dataSnapshot.child(mAuth.getUid()).child(Constants.EMAIL).getValue().toString();
+                            String myName =  dataSnapshot.child(mAuth.getUid()).child(Constants.NAME).getValue().toString();
+                            Long myBirthDay = (Long) dataSnapshot.child(mAuth.getUid()).child(Constants.BIRTH_DAY).getValue();
+                            String myPic =  dataSnapshot.child(mAuth.getUid()).child(Constants.PROFILE_PIC_URL).getValue().toString();
+                            String mySex =  dataSnapshot.child(mAuth.getUid()).child(Constants.SEX).getValue().toString();
 
                          //String fotoPerfilURL, String nombre, String correo, long fechaDeNacimiento, String genero
-                            Usuario u;
-                            Usuario yo = new Usuario(miFoto, miNombre, miCorreo, miNacimiento, miGenero);
+                            User u;
+                            User me = new User(myPic, myName, myEmail, myBirthDay, mySex);
 
                             for(DataSnapshot ds  : dataSnapshot.getChildren()){
-                                u = ds.getValue(Usuario.class);
+                                u = ds.getValue(User.class);
 
                                 //Agrego al usuario nuevo
-                                if(u.getCorreo().equals(emailABuscar)){
+                                if(u.getEmail().equals(wantedEmail)){
 
                                     database.getReference("Usuarios/" + mAuth.getUid() + "/Amigos/" +  ds.getKey()).setValue(u);
-                                    database.getReference("Usuarios/" + ds.getKey() + "/Amigos/" +  mAuth.getUid()).setValue(yo);
+                                    database.getReference("Usuarios/" + ds.getKey() + "/Amigos/" +  mAuth.getUid()).setValue(me);
 
 
 
@@ -140,7 +136,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
 
                 }
                 else
-                    Toast.makeText(VerUsuariosActivity.this, "Debe ingresar un mail valido", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SeeUsersActivity.this, "Debe ingresar un mail valido", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -154,12 +150,12 @@ public class VerUsuariosActivity extends AppCompatActivity {
 
         Query query = FirebaseDatabase.getInstance()
                 .getReference()
-                .child(Constantes.NODO_USUARIOS).child(mAuth.getUid()).child("Amigos");
+                .child(Constants.USERS_NODE).child(mAuth.getUid()).child("Amigos");
 
 
-        FirebaseRecyclerOptions<Usuario> options =
-                new FirebaseRecyclerOptions.Builder<Usuario>()
-                        .setQuery(query, Usuario.class)
+        FirebaseRecyclerOptions<User> options =
+                new FirebaseRecyclerOptions.Builder<User>()
+                        .setQuery(query, User.class)
                         .build();
 
 
@@ -167,37 +163,41 @@ public class VerUsuariosActivity extends AppCompatActivity {
 
 
 
-        adapter = new FirebaseRecyclerAdapter<Usuario, UsuarioViewHolder>(options) {
+        adapter = new FirebaseRecyclerAdapter<User, UserViewHolder>(options) {
             @Override
-            public UsuarioViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_usuario, parent, false);
+            public UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_user, parent, false);
 
-                return new UsuarioViewHolder(view);
+                return new UserViewHolder(view);
             }
 
             @Override
-            protected void onBindViewHolder(final UsuarioViewHolder holder, int position, final Usuario model) {
-                Glide.with(VerUsuariosActivity.this).load(model.getFotoPerfilURL()).into(holder.getCivFotoPerfil());
-                holder.getTxtNombreUsuario().setText(model.getNombre());
+            protected void onBindViewHolder(final UserViewHolder holder, int position, final User model) {
+                Glide.with(SeeUsersActivity.this).load(model.getProfilePicURL()).into(holder.getCivProfilePic());
+                holder.getTxtUserName().setText(model.getName());
 
                // String lastMsg = getLastMsg(mAuth.getUid(), getUidByEmail(model.getCorreo()));
                 // holder.getLastMessage().setText(lastMsg);
 
-                DatabaseReference ref = database.getReference("Usuarios/" + mAuth.getUid() + "/MensajesNuevos/" + model.getCorreo().replace(".", ","));
+                DatabaseReference ref = database.getReference();
                 ref.addValueEventListener(new ValueEventListener() {
                     //Al ser addValueEventListener, como que no es una vez, sino que lo hace todo el tiempo
                     //De esta forma, al mandar un mensaje nuevo, aparece la estrellita instantaneamente
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.getValue() != null) {
+                            if (snapshot.child(Constants.USERS_NODE).child(mAuth.getUid()).child("MensajesNuevos").child(model.getEmail().replace(".", ",")).getValue() != null) {
                                 // The child does exist
                                 holder.getCircle().setVisibility(View.VISIBLE);
                                 System.out.println(snapshot.getValue().toString());
                             }else {
 
-                                System.out.println("hola, fue null");
+
                                 holder.getCircle().setVisibility(View.GONE);
                             }
+
+                           // snapshot.child("Mensajes").child(mAuth.getUid()).child()
+
+
                         }
 
                     @Override
@@ -209,15 +209,15 @@ public class VerUsuariosActivity extends AppCompatActivity {
 
 
 
-                final LUsuario lUsuario = new LUsuario(getSnapshots().getSnapshot(position).getKey(),model);
+                final LUser lUser = new LUser(getSnapshots().getSnapshot(position).getKey(),model);
 
-                holder.getLayoutPrincipal().setOnClickListener(new View.OnClickListener() {
+                holder.getPrincipalLayout().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(VerUsuariosActivity.this,MensajeriaActivity.class);
-                        intent.putExtra("key_receptor",lUsuario.getKey());
+                        Intent intent = new Intent(SeeUsersActivity.this, MessengerActivity.class);
+                        intent.putExtra("key_receptor", lUser.getKey());
 
-                        database.getReference("Usuarios/" + mAuth.getUid() + "/MensajesNuevos/" + model.getCorreo().replace(".", ",")).removeValue();
+                        database.getReference("Usuarios/" + mAuth.getUid() + "/MensajesNuevos/" + model.getEmail().replace(".", ",")).removeValue();
 
                         startActivity(intent);
                     }
@@ -225,7 +225,7 @@ public class VerUsuariosActivity extends AppCompatActivity {
 
             }
         };
-        rvUsuarios.setAdapter(adapter);
+        rvUsers.setAdapter(adapter);
 
 
     }
@@ -258,14 +258,14 @@ public class VerUsuariosActivity extends AppCompatActivity {
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 
             int position = viewHolder.getAdapterPosition();
-            eliminarUsuario(position);
+            deleteUser(position);
 
-           // System.out.println(rvUsuarios.getChildAt(viewHolder.getAdapterPosition()).getId());
+
 
             //rvUsuarios.removeViewAt(position);
             adapter.notifyDataSetChanged();
 
-            Toast.makeText(VerUsuariosActivity.this, "ELIMINA3", Toast.LENGTH_SHORT).show();
+
         }
     };
 
@@ -273,20 +273,20 @@ public class VerUsuariosActivity extends AppCompatActivity {
 
 
 
-    private void eliminarUsuario(final int id){
+    private void deleteUser(final int id){
 
         database.getReference().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String uidAmigoAEliminar;
-                String miNombre = dataSnapshot.child("Usuarios").child(mAuth.getUid()).child("nombre").getValue().toString(); //conseguimos el nombre
+                String uidFriendToDelete;
+                String myName = dataSnapshot.child(Constants.USERS_NODE).child(mAuth.getUid()).child(Constants.NAME).getValue().toString(); //conseguimos el nombre
 
                 int i = 0;
-                for(DataSnapshot ds : dataSnapshot.child("Usuarios").child(mAuth.getUid()).child("Amigos").getChildren()){
+                for(DataSnapshot ds : dataSnapshot.child(Constants.USERS_NODE).child(mAuth.getUid()).child("Amigos").getChildren()){
                     if(i == id){
-                        uidAmigoAEliminar = ds.getKey();
+                        uidFriendToDelete = ds.getKey();
                         //aca eliminamos al usuario
-                        database.getReference("Usuarios/" + mAuth.getUid() + "/Amigos/" + uidAmigoAEliminar).removeValue();
+                        database.getReference("Usuarios/" + mAuth.getUid() + "/Amigos/" + uidFriendToDelete).removeValue();
 
                         //aca eliminamos NUESTRO chat con dicho usuario, PERO no eliminamos SU chat con nosotros, eso que lo haga el si quiere
                         //Vamos a mensajes/miUID/uidAEliminar
@@ -294,24 +294,24 @@ public class VerUsuariosActivity extends AppCompatActivity {
                         //Mensajes/idUsuario1/idUsuario2/nodos con mensajes
                         //idem con todos.
 
-                        System.out.println((dataSnapshot.child("Usuarios").child(uidAmigoAEliminar).child("Amigos").hasChild(mAuth.getUid())));
+                        System.out.println((dataSnapshot.child(Constants.USERS_NODE).child(uidFriendToDelete).child("Amigos").hasChild(mAuth.getUid())));
                         //DEBERIAMOS VER SI EL OTRO AUN ME TIENE COMO AMIGO, SI NO ME TIENE, BORRO TODOO
-                        if(!dataSnapshot.child("Usuarios").child(uidAmigoAEliminar).child("Amigos").hasChild(mAuth.getUid())){
+                        if(!dataSnapshot.child(Constants.USERS_NODE).child(uidFriendToDelete).child("Amigos").hasChild(mAuth.getUid())){
                             //no me tiene, borro todoo lo que haya de chat entre nosotros por ambas partes
                             //como lo mio lo voy a borrar siempre, solo borro lo que se le haya quedado a el:
-                            database.getReference("Mensajes/" + uidAmigoAEliminar + "/" + mAuth.getUid()).removeValue();
+                            database.getReference("Mensajes/" + uidFriendToDelete + "/" + mAuth.getUid()).removeValue();
 
                             //debo eliminar mi ultimo mensaje nuevo que le habia mandado a la otra persona cuando ya me habia eliminado
-                            database.getReference("Usuarios/" + uidAmigoAEliminar + "/MensajesNuevos/" + mAuth.getCurrentUser().getEmail().replace(".", ",")).removeValue();
+                            database.getReference("Usuarios/" + uidFriendToDelete + "/MensajesNuevos/" + mAuth.getCurrentUser().getEmail().replace(".", ",")).removeValue();
                                                                                 //no entiendo esos warnings, ondaa, getEmail no podria dar null en este caso.
                         }
 
 
                         //SI ME TIENE, SOLO BORRO LO MIO
-                        database.getReference("Mensajes/" + mAuth.getUid() + "/" + uidAmigoAEliminar).removeValue();
+                        database.getReference("Mensajes/" + mAuth.getUid() + "/" + uidFriendToDelete).removeValue();
 
-                        String amigoUid = uidAmigoAEliminar;
-                        System.out.println(amigoUid);
+                        //String amigoUid = uidFriendToDelete;
+                       // System.out.println(amigoUid);
 
                         //elimino de MIS amigos, pero no de los suyos
                        // database.getReference("Usuarios/" + amigoUid + "/Amigos/" + miNombre + "~" + mAuth.getUid()).removeValue();

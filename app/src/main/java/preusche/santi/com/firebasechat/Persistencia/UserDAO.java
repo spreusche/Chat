@@ -23,90 +23,90 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
-import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
-import preusche.santi.com.firebasechat.Utilidades.Constantes;
+import preusche.santi.com.firebasechat.Entidades.Firebase.User;
+import preusche.santi.com.firebasechat.Entidades.Logica.LUser;
+import preusche.santi.com.firebasechat.Utilidades.Constants;
 
 /**
  * Created by user on 28/08/2018. 28
  */
-public class UsuarioDAO {
+public class UserDAO {
 
-    public interface IDevolverUsuario{
-        public void devolverUsuario(LUsuario lUsuario);
-        public void devolverError(String error);
+    public interface IReturnUser {
+        public void returnUser(LUser lUser);
+        public void returnError(String error);
     }
 
-    public interface IDevolverUrlFoto{
-        public void devolerUrlString(String url);
+    public interface IReturnUrlPicture {
+        public void returnUrlString(String url);
     }
 
-    private static UsuarioDAO usuarioDAO;
+    private static UserDAO userDAO;
     private FirebaseDatabase database;
     private FirebaseStorage storage;
-    private DatabaseReference referenceUsuarios;
-    private StorageReference referenceFotoDePerfil;
+    private DatabaseReference usersReference;
+    private StorageReference profilePicReference;
 
-    public static UsuarioDAO getInstancia(){
-        if(usuarioDAO==null) usuarioDAO = new UsuarioDAO();
-        return usuarioDAO;
+    public static UserDAO getInstance(){
+        if(userDAO ==null) userDAO = new UserDAO();
+        return userDAO;
     }
 
-    private UsuarioDAO(){
+    private UserDAO(){
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
-        referenceUsuarios = database.getReference(Constantes.NODO_USUARIOS);
-        referenceFotoDePerfil = storage.getReference("Fotos/FotoPerfil/"+getKeyUsuario());
+        usersReference = database.getReference(Constants.USERS_NODE);
+        profilePicReference = storage.getReference("Fotos/FotoPerfil/"+ getUserKey());
     }
 
-    public String getKeyUsuario(){
+    public String getUserKey(){
         return FirebaseAuth.getInstance().getUid();
     }
 
-    public boolean isUsuarioLogeado(){
+    public boolean isUserLogged(){
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         return firebaseUser!=null;
     }
 
-    public long fechaDeCreacionLong(){
+    public long creationDateLong(){
         return FirebaseAuth.getInstance().getCurrentUser().getMetadata().getCreationTimestamp();
     }
 
-    public long fechaDeUltimaVezQueSeLogeoLong(){
+    public long lastLoginDateLong(){
         return FirebaseAuth.getInstance().getCurrentUser().getMetadata().getLastSignInTimestamp();
     }
 
-    public void obtenerInformacionDeUsuarioPorLLave(final String key, final IDevolverUsuario iDevolverUsuario){
-        referenceUsuarios.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getUserInformationFromKey(final String key, final IReturnUser iReturnUser){
+        usersReference.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Usuario usuario = dataSnapshot.getValue(Usuario.class);
-                LUsuario lUsuario = new LUsuario(key,usuario);
-                iDevolverUsuario.devolverUsuario(lUsuario);
+                User user = dataSnapshot.getValue(User.class);
+                LUser lUser = new LUser(key,user);
+                iReturnUser.returnUser(lUser);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                iDevolverUsuario.devolverError(databaseError.getMessage());
+                iReturnUser.returnError(databaseError.getMessage());
             }
         });
 
     }
 
-    public void añadirFotoDePerfilALosUsuariosQueNoTienenFoto(){
-        referenceUsuarios.addListenerForSingleValueEvent(new ValueEventListener() {
+    public void addProfilePicToProfilesWithoutOne(){
+        usersReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                List<LUsuario> lUsuariosLista = new ArrayList<>();
+                List<LUser> lUsersList = new ArrayList<>();
                 for(DataSnapshot childDataSnapShot : dataSnapshot.getChildren()){
-                    Usuario usuario = childDataSnapShot.getValue(Usuario.class);
-                    LUsuario lUsuario = new LUsuario(childDataSnapShot.getKey(),usuario);
-                    lUsuariosLista.add(lUsuario);
+                    User user = childDataSnapShot.getValue(User.class);
+                    LUser lUser = new LUser(childDataSnapShot.getKey(),user);
+                    lUsersList.add(lUser);
                 }
 
-                for(LUsuario lUsuario : lUsuariosLista){
-                    if(lUsuario.getUsuario().getFotoPerfilURL()==null){
-                        referenceUsuarios.child(lUsuario.getKey()).child("fotoPerfilURL").setValue(Constantes.URL_FOTO_POR_DEFECTO_USUARIOS);
+                for(LUser lUser : lUsersList){
+                    if(lUser.getUser().getProfilePicURL()==null){
+                        usersReference.child(lUser.getKey()).child(Constants.PROFILE_PIC_URL).setValue(Constants.DEFAULT_URI_PROFILE_PIC);
                     }
                 }
 
@@ -119,26 +119,26 @@ public class UsuarioDAO {
         });
     }
 
-    public void subirFotoUri(Uri uri, final IDevolverUrlFoto iDevolverUrlFoto){
-        String nombreFoto = "";
+    public void uploadPhotoUri(Uri uri, final IReturnUrlPicture iReturnUrlPicture){
+        String photoName = "";
         Date date = new Date();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("SSS.ss-mm-hh-dd-MM-yyyy", Locale.getDefault());
-        nombreFoto = simpleDateFormat.format(date);
-        final StorageReference fotoReferencia = referenceFotoDePerfil.child(nombreFoto);
-        fotoReferencia.putFile(uri).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+        photoName = simpleDateFormat.format(date);
+        final StorageReference photoReference = profilePicReference.child(photoName);
+        photoReference.putFile(uri).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                 if(!task.isSuccessful()){
                     throw task.getException();
                 }
-                return fotoReferencia.getDownloadUrl();
+                return photoReference.getDownloadUrl();
             }
         }).addOnCompleteListener(new OnCompleteListener<Uri>() {
             @Override
             public void onComplete(@NonNull Task<Uri> task) {
                 if(task.isSuccessful()){
                     Uri uri = task.getResult();
-                    iDevolverUrlFoto.devolerUrlString(uri.toString());
+                    iReturnUrlPicture.returnUrlString(uri.toString());
                 }
             }
         });

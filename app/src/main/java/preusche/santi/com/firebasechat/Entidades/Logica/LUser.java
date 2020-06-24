@@ -4,20 +4,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
-import preusche.santi.com.firebasechat.Persistencia.UsuarioDAO;
+import preusche.santi.com.firebasechat.Entidades.Firebase.User;
+import preusche.santi.com.firebasechat.Persistencia.UserDAO;
 
 /**
  * Created by user on 28/08/2018. 28
  */
-public class LUsuario {
+public class LUser {
 
     private String key;
-    private Usuario usuario;
+    private User user;
 
-    public LUsuario(String key, Usuario usuario) {
+    public LUser(String key, User user) {
         this.key = key;
-        this.usuario = usuario;
+        this.user = user;
     }
 
     public String getKey() {
@@ -28,23 +28,23 @@ public class LUsuario {
         this.key = key;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public User getUser() {
+        return user;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public String obtenerFechaDeCreacion(){
+    public String getCreationDate(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        Date date = new Date(UsuarioDAO.getInstancia().fechaDeCreacionLong());
+        Date date = new Date(UserDAO.getInstance().creationDateLong());
         return simpleDateFormat.format(date);
     }
 
-    public String obtenerFechaDeUltimaVezQueSeLogeo(){
+    public String getLastLoginDate(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        Date date = new Date(UsuarioDAO.getInstancia().fechaDeUltimaVezQueSeLogeoLong());
+        Date date = new Date(UserDAO.getInstance().lastLoginDateLong());
         return simpleDateFormat.format(date);
     }
 

@@ -24,18 +24,18 @@ import preusche.santi.com.firebasechat.R;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText txtCorreo,txtContraseña;
-    private Button btnLogin,btnRegistro;
+    private EditText txtEmail, txtPassword;
+    private Button btnLogin, btnRegister;
     private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        txtCorreo = (EditText) findViewById(R.id.idCorreoLogin);
-        txtContraseña = (EditText) findViewById(R.id.idContraseñaLogin);
+        txtEmail = (EditText) findViewById(R.id.idEmailLogin);
+        txtPassword = (EditText) findViewById(R.id.idPasswordLogin);
         btnLogin = (Button) findViewById(R.id.idLoginLogin);
-        btnRegistro = (Button) findViewById(R.id.idRegistroLogin);
+        btnRegister = (Button) findViewById(R.id.idRegisterLogin);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -44,10 +44,10 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String correo = txtCorreo.getText().toString();
-                if(isValidEmail(correo) && validarContraseña()){
-                    String contraseña = txtContraseña.getText().toString();
-                    mAuth.signInWithEmailAndPassword(correo, contraseña)
+                String email = txtEmail.getText().toString();
+                if(isValidEmail(email) && validatePassword()){
+                    String password = txtPassword.getText().toString();
+                    mAuth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
@@ -68,10 +68,10 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        btnRegistro.setOnClickListener(new View.OnClickListener() {
+        btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(LoginActivity.this,RegistroActivity.class));
+                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
             }
         });
         //UsuarioDAO.getInstancia().añadirFotoDePerfilALosUsuariosQueNoTienenFoto();
@@ -82,10 +82,10 @@ public class LoginActivity extends AppCompatActivity {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
     }
 
-    public boolean validarContraseña(){
-        String contraseña;
-        contraseña = txtContraseña.getText().toString();
-        if(contraseña.length()>=6 && contraseña.length()<=16){
+    public boolean validatePassword(){
+        String password;
+        password = txtPassword.getText().toString();
+        if(password.length()>=6 && password.length()<=16){
             return true;
         }else return false;
     }

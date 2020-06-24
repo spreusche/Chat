@@ -9,33 +9,33 @@ import android.widget.Button;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-import preusche.santi.com.firebasechat.Persistencia.UsuarioDAO;
+import preusche.santi.com.firebasechat.Persistencia.UserDAO;
 import preusche.santi.com.firebasechat.R;
 
 public class MenuActivity extends AppCompatActivity {
 
-    private Button btnVerUsuarios;
-    private Button btnCerrarSesion;
+    private Button btnSeeUsers;
+    private Button btnLogOut;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        btnVerUsuarios = findViewById(R.id.btnVerUsuarios);
-        btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
+        btnSeeUsers = findViewById(R.id.btnSeeUsers);
+        btnLogOut = findViewById(R.id.btnCloseSession);
 
         setTitle("Menu");
 
-        btnVerUsuarios.setOnClickListener(new View.OnClickListener() {
+        btnSeeUsers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MenuActivity.this,VerUsuariosActivity.class);
+                Intent intent = new Intent(MenuActivity.this, SeeUsersActivity.class);
                 startActivity(intent);
             }
         });
 
-        btnCerrarSesion.setOnClickListener(new View.OnClickListener() {
+        btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FirebaseAuth.getInstance().signOut();
@@ -53,7 +53,7 @@ public class MenuActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(UsuarioDAO.getInstancia().isUsuarioLogeado()){
+        if(UserDAO.getInstance().isUserLogged()){
             //el usuario esta logeado y hacemos algo
         }else{
             returnLogin();

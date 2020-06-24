@@ -36,41 +36,54 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import preusche.santi.com.firebasechat.Adaptadores.MensajeriaAdaptador;
-import preusche.santi.com.firebasechat.Entidades.Firebase.Mensaje;
-import preusche.santi.com.firebasechat.Entidades.Firebase.Usuario;
-import preusche.santi.com.firebasechat.Entidades.Logica.LMensaje;
-import preusche.santi.com.firebasechat.Entidades.Logica.LUsuario;
-import preusche.santi.com.firebasechat.Persistencia.MensajeriaDAO;
-import preusche.santi.com.firebasechat.Persistencia.UsuarioDAO;
+import preusche.santi.com.firebasechat.Adaptadores.MessengerAdapter;
+import preusche.santi.com.firebasechat.Entidades.Firebase.Message;
+import preusche.santi.com.firebasechat.Entidades.Firebase.User;
+import preusche.santi.com.firebasechat.Entidades.Logica.LMessage;
+import preusche.santi.com.firebasechat.Entidades.Logica.LUser;
+import preusche.santi.com.firebasechat.Persistencia.MessengerDAO;
+import preusche.santi.com.firebasechat.Persistencia.UserDAO;
 import preusche.santi.com.firebasechat.R;
-import preusche.santi.com.firebasechat.Utilidades.Constantes;
+import preusche.santi.com.firebasechat.Utilidades.Constants;
 
-public class MensajeriaActivity extends AppCompatActivity {
+public class MessengerActivity extends AppCompatActivity {
 
-    private CircleImageView fotoPerfil;
-    private TextView nombre;
-    private RecyclerView rvMensajes;
-    private EditText txtMensaje;
-    private Button btnEnviar;
-    private MensajeriaAdaptador adapter;
-    private ImageButton btnEnviarFoto;
+    //View
+    private CircleImageView profilePic;
+    private TextView name;
+    private RecyclerView rvMessages;
 
+    //Text
+    private EditText txtMessage;
+    private ImageButton btnSendPic;
+
+    //Button
+    private Button btnSend;
+
+    //Adapter
+    private MessengerAdapter adapter;
+
+    //Firebase
     private FirebaseStorage storage;
+    private FirebaseAuth mAuth;
+
+    //Storage
     private StorageReference storageReference;
+
+    //Constant
     private static final int PHOTO_SEND = 1;
     private static final int PHOTO_PERFIL = 2;
-    private String fotoPerfilCadena;
 
-    private FirebaseAuth mAuth;
-    private String NOMBRE_USUARIO;
 
+    //String
+    private String profilePicString;
+    private String USER_NAME;
     private String KEY_RECEPTOR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mensajeria);
+        setContentView(R.layout.activity_messenger);
 
         setTitle("Chat");
 
@@ -81,33 +94,30 @@ public class MensajeriaActivity extends AppCompatActivity {
             finish();
         }
 
-        fotoPerfil = (CircleImageView) findViewById(R.id.fotoPerfil);
-        nombre = (TextView) findViewById(R.id.nombre);
-        rvMensajes = (RecyclerView) findViewById(R.id.rvMensajes);
-        txtMensaje = (EditText) findViewById(R.id.txtMensaje);
-        btnEnviar = (Button) findViewById(R.id.btnEnviar);
-        btnEnviarFoto = (ImageButton) findViewById(R.id.btnEnviarFoto);
-        fotoPerfilCadena = "";
+        profilePic = (CircleImageView) findViewById(R.id.profilePic);
+        name = (TextView) findViewById(R.id.name);
+        rvMessages = (RecyclerView) findViewById(R.id.rvMessages);
+        txtMessage = (EditText) findViewById(R.id.txtMessage);
+        btnSend = (Button) findViewById(R.id.btnSend);
+        btnSendPic = (ImageButton) findViewById(R.id.btnSendPhoto);
+        profilePicString = "";
 
         storage = FirebaseStorage.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        adapter = new MensajeriaAdaptador(this);
+        adapter = new MessengerAdapter(this);
         LinearLayoutManager l = new LinearLayoutManager(this);
-        rvMensajes.setLayoutManager(l);
-        rvMensajes.setAdapter(adapter);
+        rvMessages.setLayoutManager(l);
+        rvMessages.setAdapter(adapter);
 
         System.out.println(KEY_RECEPTOR);
 
-//        nombre.setText("Teemo");
-//        Glide.with(this).load("https://firebasestorage.googleapis.com/v0/b/kevin-7ad2a.appspot.com/o/Fotos%2FFotoPerfil%2FYxiSpyoaRlcfrJcAeZ3b3MRDR463%2F776.36-20-04-22-05-2020?alt=media&token=475b9fcb-229e-446c-b537-f25a40a995d0").into(fotoPerfil);
-
-        FirebaseDatabase.getInstance().getReference(Constantes.NODO_USUARIOS + "/" + KEY_RECEPTOR).addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference(Constants.USERS_NODE + "/" + KEY_RECEPTOR).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Usuario u = dataSnapshot.getValue(Usuario.class);
-                nombre.setText(u.getNombre());
-                Glide.with(MensajeriaActivity.this).load(u.getFotoPerfilURL()).into(fotoPerfil);
+                User u = dataSnapshot.getValue(User.class);
+                name.setText(u.getName());
+                Glide.with(MessengerActivity.this).load(u.getProfilePicURL()).into(profilePic);
 
 
             }
@@ -123,27 +133,27 @@ public class MensajeriaActivity extends AppCompatActivity {
 
 
 
-        btnEnviar.setOnClickListener(new View.OnClickListener() {
+        btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String mensajeEnviar = txtMensaje.getText().toString();
-                if(!mensajeEnviar.isEmpty()){
-                    Mensaje mensaje = new Mensaje();
-                    mensaje.setMensaje(mensajeEnviar);
-                    mensaje.setContieneFoto(false);
-                    mensaje.setKeyEmisor(UsuarioDAO.getInstancia().getKeyUsuario());
-                    MensajeriaDAO.getInstancia().nuevoMensaje(UsuarioDAO.getInstancia().getKeyUsuario(),KEY_RECEPTOR,mensaje);
+                String messageToSend = txtMessage.getText().toString();
+                if(!messageToSend.isEmpty()){
+                    Message message = new Message();
+                    message.setMessage(messageToSend);
+                    message.setContainsPhoto(false);
+                    message.setKeyEmisor(UserDAO.getInstance().getUserKey());
+                    MessengerDAO.getInstance().newMessage(UserDAO.getInstance().getUserKey(), KEY_RECEPTOR, message);
 
-                    FirebaseDatabase.getInstance().getReference("Usuarios/" + KEY_RECEPTOR + "/MensajesNuevos/" + mAuth.getCurrentUser().getEmail().replace(".",",")).setValue(mensajeEnviar);
+                    FirebaseDatabase.getInstance().getReference("Usuarios/" + KEY_RECEPTOR + "/MensajesNuevos/" + mAuth.getCurrentUser().getEmail().replace(".",",")).setValue(messageToSend);
 
 
-                    txtMensaje.setText("");
+                    txtMessage.setText("");
                 }
             }
         });
 
 
-        btnEnviarFoto.setOnClickListener(new View.OnClickListener() {
+        btnSendPic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
@@ -153,15 +163,20 @@ public class MensajeriaActivity extends AppCompatActivity {
             }
         });
 
+        /*ESTO ES DE KEVIN PERO ANDA MAL
+        //PORQUE LO QUE HACE ES QUE ME DEJA "CAMBIAR LA FOTO DE LOS DEMAS", PERO NO FUNCA, NO LO VEO NECESARIO
         fotoPerfil.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(MensajeriaActivity.this, "FOTOO", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(Intent.ACTION_GET_CONTENT);
                 i.setType("image/jpeg");
                 i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);
                 startActivityForResult(Intent.createChooser(i,"Selecciona una foto"),PHOTO_PERFIL);
             }
         });
+
+         */
 
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -173,36 +188,36 @@ public class MensajeriaActivity extends AppCompatActivity {
 
         FirebaseDatabase.
                 getInstance().
-                getReference(Constantes.NODO_MENSAJES).
-                child(UsuarioDAO.getInstancia().getKeyUsuario()).
+                getReference(Constants.MESSAGES_NODE).
+                child(UserDAO.getInstance().getUserKey()).
                 child(KEY_RECEPTOR).addChildEventListener(new ChildEventListener() {
 
             //traer la informacion del usuario
             //guardamos la informacion del usuario en una lista temporal
             //obtenemos la informacion guardada  por la llave
-            Map<String, LUsuario> mapUsuariosTemporales = new HashMap<>();
+            Map<String, LUser> mapTemporalUsers = new HashMap<>();
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                final Mensaje mensaje = dataSnapshot.getValue(Mensaje.class);
-                final LMensaje lMensaje = new LMensaje(dataSnapshot.getKey(),mensaje);
-                final int posicion = adapter.addMensaje(lMensaje);
+                final Message message = dataSnapshot.getValue(Message.class);
+                final LMessage lMessage = new LMessage(dataSnapshot.getKey(),message);
+                final int position = adapter.addMessage(lMessage);
 
-                if(mapUsuariosTemporales.get(mensaje.getKeyEmisor())!=null){
-                    lMensaje.setlUsuario(mapUsuariosTemporales.get(mensaje.getKeyEmisor()));
-                    adapter.actualizarMensaje(posicion,lMensaje);
+                if(mapTemporalUsers.get(message.getKeyEmisor()) != null){
+                    lMessage.setlUser(mapTemporalUsers.get(message.getKeyEmisor()));
+                    adapter.updateMessage(position,lMessage);
                 }else{
-                    UsuarioDAO.getInstancia().obtenerInformacionDeUsuarioPorLLave(mensaje.getKeyEmisor(), new UsuarioDAO.IDevolverUsuario() {
+                    UserDAO.getInstance().getUserInformationFromKey(message.getKeyEmisor(), new UserDAO.IReturnUser() {
                         @Override
-                        public void devolverUsuario(LUsuario lUsuario) {
-                            mapUsuariosTemporales.put(mensaje.getKeyEmisor(),lUsuario);
-                            lMensaje.setlUsuario(lUsuario);
-                            adapter.actualizarMensaje(posicion,lMensaje);
+                        public void returnUser(LUser lUser) {
+                            mapTemporalUsers.put(message.getKeyEmisor(), lUser);
+                            lMessage.setlUser(lUser);
+                            adapter.updateMessage(position,lMessage);
                         }
 
                         @Override
-                        public void devolverError(String error) {
-                            Toast.makeText(MensajeriaActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                        public void returnError(String error) {
+                            Toast.makeText(MessengerActivity.this, "Error: "+ error, Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -235,7 +250,7 @@ public class MensajeriaActivity extends AppCompatActivity {
     }
 
     private void setScrollbar(){
-        rvMensajes.scrollToPosition(adapter.getItemCount()-1);
+        rvMessages.scrollToPosition(adapter.getItemCount()-1);
     }
 
     public static boolean verifyStoragePermissions(Activity activity) {
@@ -277,12 +292,12 @@ public class MensajeriaActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if(task.isSuccessful()){
                         Uri uri = task.getResult();
-                        Mensaje mensaje = new Mensaje();
-                        mensaje.setMensaje("El uuario ha enviado una foto");
-                        mensaje.setUrlFoto(uri.toString());
-                        mensaje.setContieneFoto(true);
-                        mensaje.setKeyEmisor(UsuarioDAO.getInstancia().getKeyUsuario());
-                        MensajeriaDAO.getInstancia().nuevoMensaje(UsuarioDAO.getInstancia().getKeyUsuario(),KEY_RECEPTOR,mensaje);
+                        Message message = new Message();
+                        message.setMessage("Image");
+                        message.setUrlPic(uri.toString());
+                        message.setContainsPhoto(true);
+                        message.setKeyEmisor(UserDAO.getInstance().getUserKey());
+                        MessengerDAO.getInstance().newMessage(UserDAO.getInstance().getUserKey(),KEY_RECEPTOR,message);
                     }
                 }
             });

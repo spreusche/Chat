@@ -6,41 +6,41 @@ import com.google.firebase.database.ServerValue;
  * Created by user on 04/09/2017. 04
  */
 
-public class Mensaje {
+public class Message {
 
-    private String mensaje;
-    private String urlFoto;
-    private boolean contieneFoto;
+    private String message;
+    private String urlPic;
+    private boolean containsPhoto;
     private String keyEmisor;
     private Object createdTimestamp;
    // private boolean leido;
 
-    public Mensaje() {
+    public Message() {
         createdTimestamp = ServerValue.TIMESTAMP;
     }
 
-    public String getMensaje() {
-        return mensaje;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public String getUrlFoto() {
-        return urlFoto;
+    public String getUrlPic() {
+        return urlPic;
     }
 
-    public void setUrlFoto(String urlFoto) {
-        this.urlFoto = urlFoto;
+    public void setUrlPic(String urlPic) {
+        this.urlPic = urlPic;
     }
 
-    public boolean isContieneFoto() {
-        return contieneFoto;
+    public boolean isContainsPhoto() {
+        return containsPhoto;
     }
 
-    public void setContieneFoto(boolean contieneFoto) {
-        this.contieneFoto = contieneFoto;
+    public void setContainsPhoto(boolean containsPhoto) {
+        this.containsPhoto = containsPhoto;
     }
 
     public String getKeyEmisor() {

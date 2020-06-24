@@ -5,20 +5,20 @@ import org.ocpsoft.prettytime.PrettyTime;
 import java.util.Date;
 import java.util.Locale;
 
-import preusche.santi.com.firebasechat.Entidades.Firebase.Mensaje;
+import preusche.santi.com.firebasechat.Entidades.Firebase.Message;
 
 /**
  * Created by user on 28/08/2018. 28
  */
-public class LMensaje {
+public class LMessage {
 
     private String key;
-    private Mensaje mensaje;
-    private LUsuario lUsuario;
+    private Message message;
+    private LUser lUser;
 
-    public LMensaje(String key, Mensaje mensaje) {
+    public LMessage(String key, Message message) {
         this.key = key;
-        this.mensaje = mensaje;
+        this.message = message;
     }
 
     public String getKey() {
@@ -29,27 +29,27 @@ public class LMensaje {
         this.key = key;
     }
 
-    public Mensaje getMensaje() {
-        return mensaje;
+    public Message getMessage() {
+        return message;
     }
 
-    public void setMensaje(Mensaje mensaje) {
-        this.mensaje = mensaje;
+    public void setMessage(Message message) {
+        this.message = message;
     }
 
     public long getCreatedTimestampLong(){
-        return (long) mensaje.getCreatedTimestamp();
+        return (long) message.getCreatedTimestamp();
     }
 
-    public LUsuario getlUsuario() {
-        return lUsuario;
+    public LUser getlUser() {
+        return lUser;
     }
 
-    public void setlUsuario(LUsuario lUsuario) {
-        this.lUsuario = lUsuario;
+    public void setlUser(LUser lUser) {
+        this.lUser = lUser;
     }
 
-    public String fechaDeCreacionDelMensaje(){
+    public String messageCreationDate(){
         Date date = new Date(getCreatedTimestampLong());
         PrettyTime prettyTime = new PrettyTime(new Date(),Locale.getDefault());
         return prettyTime.format(date);

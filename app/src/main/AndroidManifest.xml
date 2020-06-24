@@ -19,9 +19,9 @@
             </intent-filter>
         </activity>
         <activity android:name="preusche.santi.com.firebasechat.Activity.MenuActivity"></activity>
-        <activity android:name="preusche.santi.com.firebasechat.Activity.VerUsuariosActivity"></activity>
-        <activity android:name="preusche.santi.com.firebasechat.Activity.RegistroActivity"></activity>
-        <activity android:name="preusche.santi.com.firebasechat.Activity.MensajeriaActivity"></activity>
+        <activity android:name="preusche.santi.com.firebasechat.Activity.SeeUsersActivity"></activity>
+        <activity android:name="preusche.santi.com.firebasechat.Activity.RegisterActivity"></activity>
+        <activity android:name="preusche.santi.com.firebasechat.Activity.MessengerActivity"></activity>
     </application>
 
 </manifest>
