@@ -275,17 +275,41 @@ public class VerUsuariosActivity extends AppCompatActivity {
 
     private void eliminarUsuario(final int id){
 
-        database.getReference("Usuarios/" + mAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        database.getReference().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String uidAmigoAEliminar;
-                String miNombre = dataSnapshot.child("nombre").getValue().toString(); //conseguimos el nombre
+                String miNombre = dataSnapshot.child("Usuarios").child(mAuth.getUid()).child("nombre").getValue().toString(); //conseguimos el nombre
 
                 int i = 0;
-                for(DataSnapshot ds : dataSnapshot.child("Amigos").getChildren()){
+                for(DataSnapshot ds : dataSnapshot.child("Usuarios").child(mAuth.getUid()).child("Amigos").getChildren()){
                     if(i == id){
                         uidAmigoAEliminar = ds.getKey();
+                        //aca eliminamos al usuario
                         database.getReference("Usuarios/" + mAuth.getUid() + "/Amigos/" + uidAmigoAEliminar).removeValue();
+
+                        //aca eliminamos NUESTRO chat con dicho usuario, PERO no eliminamos SU chat con nosotros, eso que lo haga el si quiere
+                        //Vamos a mensajes/miUID/uidAEliminar
+                        //ya que en firebase se guarda:
+                        //Mensajes/idUsuario1/idUsuario2/nodos con mensajes
+                        //idem con todos.
+
+                        System.out.println((dataSnapshot.child("Usuarios").child(uidAmigoAEliminar).child("Amigos").hasChild(mAuth.getUid())));
+                        //DEBERIAMOS VER SI EL OTRO AUN ME TIENE COMO AMIGO, SI NO ME TIENE, BORRO TODOO
+                        if(!dataSnapshot.child("Usuarios").child(uidAmigoAEliminar).child("Amigos").hasChild(mAuth.getUid())){
+                            //no me tiene, borro todoo lo que haya de chat entre nosotros por ambas partes
+                            //como lo mio lo voy a borrar siempre, solo borro lo que se le haya quedado a el:
+                            database.getReference("Mensajes/" + uidAmigoAEliminar + "/" + mAuth.getUid()).removeValue();
+
+                            //debo eliminar mi ultimo mensaje nuevo que le habia mandado a la otra persona cuando ya me habia eliminado
+                            database.getReference("Usuarios/" + uidAmigoAEliminar + "/MensajesNuevos/" + mAuth.getCurrentUser().getEmail().replace(".", ",")).removeValue();
+                                                                                //no entiendo esos warnings, ondaa, getEmail no podria dar null en este caso.
+                        }
+
+
+                        //SI ME TIENE, SOLO BORRO LO MIO
+                        database.getReference("Mensajes/" + mAuth.getUid() + "/" + uidAmigoAEliminar).removeValue();
+
                         String amigoUid = uidAmigoAEliminar;
                         System.out.println(amigoUid);
 
