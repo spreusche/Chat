@@ -15,6 +15,7 @@ public class UsuarioViewHolder extends RecyclerView.ViewHolder {
     private TextView txtNombreUsuario;
     private LinearLayout layoutPrincipal;
     private TextView circle;
+    private TextView lastMessage;
 
     public UsuarioViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -54,5 +55,13 @@ public class UsuarioViewHolder extends RecyclerView.ViewHolder {
 
     public void setCircle(TextView circle) {
         this.circle = circle;
+    }
+
+    public TextView getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(TextView lastMessage) {
+        this.lastMessage = lastMessage;
     }
 }
